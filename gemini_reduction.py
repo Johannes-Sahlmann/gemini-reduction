@@ -1,11 +1,6 @@
 """Helper functions and classes for reducing Gemini-S/N GMOS imaging data.
 
 
-ENVRIONMENT CREATION:
-    conda create -n geminiconda python=2.7 iraf-all pyraf-all stsci gemini
-    conda install -y -c openastronomy aplpy
-    conda install -y -c astropy astroquery
-
 
 # J. Sahlmann, STScI/AURA, 2016-12-12 -- 2017-02-07
 https://archive.gemini.edu/help/api.html
