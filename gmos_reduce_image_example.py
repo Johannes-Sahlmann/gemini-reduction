@@ -253,8 +253,6 @@ for j,fname in enumerate(T['filename']):
 
     if demo_only:
         break
-#   makeGeminiFrameMosaicPDF(outFileName,overwrite,outputDir = outputDir)
-#   mosaicName = os.path.join(dataDir,'m'+fname)    
 
 sys.exit()
 
