@@ -6,6 +6,8 @@
     conda install -y -c astropy     aplpy
 
 ### Example usage
+    python gmos_reduce_image_example.py
+    
 This script implements:
 - download data from Gemini archive given an object name
 - associate and download corresponding calibrations (bias, flat)
@@ -14,7 +16,7 @@ This script implements:
 - generate pdf images
     
     
-    python gmos_reduce_image_example.py 
+     
 
 
 ### Documentation
