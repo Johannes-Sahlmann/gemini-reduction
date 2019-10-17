@@ -1,24 +1,33 @@
-"""
+"""Helper functions and classes for reducing Gemini-S/N GMOS imaging data.
+
+
+ENVRIONMENT CREATION:
+    conda create -n geminiconda python=2.7 iraf-all pyraf-all stsci gemini
+    conda install -y -c openastronomy aplpy
+    conda install -y -c astropy astroquery
+
+
 # J. Sahlmann, STScI/AURA, 2016-12-12 -- 2017-02-07
-# https://archive.gemini.edu/help/api.html
+https://archive.gemini.edu/help/api.html
 
 """
 
 from __future__ import print_function
 
 # Load the required packages
-import os, sys
+import os
 import numpy as np
 from astropy import units as u
-from astropy.table import Table, Column
+from astropy.table import Table
 
 import aplpy
 import pylab as pl
 
 import urllib
 import json
-# from astropy.io import fits
+
 from astropy.time import Time, TimeDelta
+import ssl
 
 
 from pyraf import iraf
@@ -40,11 +49,17 @@ def get_time_window(tdate,timeDeltaDays):
     t2 = (tdate + deltaDate).iso.split(' ')[0].replace('-','')
     return t1,t2
 
+
+
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
 def get_json_summary(url):
-    uu = urllib.urlopen(url);    
-    jsondoc = uu.read();    
-    uu.close();    
-    files = json.loads(jsondoc);
+    uu = urllib.urlopen(url, context=ctx)
+    jsondoc = uu.read()
+    uu.close()
+    files = json.loads(jsondoc)
     return files
     
 ################################################################################
@@ -90,15 +105,18 @@ def download_fitsfile_from_gemini_archive(f, downloadDir, overwrite=0, verbose=0
         myf = f 
     durl = os.path.join(downloadUrl,myf)
     #download file
-    targetFileName = os.path.join(downloadDir,myf)
-    if ( (not os.path.isfile(targetFileName)) or (overwrite == 1) ):
+    targetFileName = os.path.join(downloadDir, myf)
+    if os.path.isdir(downloadDir) is False:
+        os.makedirs(downloadDir)
+    if ( (not os.path.isfile(targetFileName)) or (overwrite) ):
         print('Dowloading %s'%  myf)
-        testfile = urllib.URLopener()
+        testfile = urllib.URLopener(context=ctx)
         if cookie is not None:
             testfile.addheader('cookie', '%s=%s'% (cookie['name'],cookie['value']))
-        testfile.retrieve(durl,targetFileName)
+        testfile.retrieve(durl, targetFileName)
     elif verbose:
         print('File already downloaded: %s' % myf)        
+
 
 def select_matching_calibration_from_gemini_archive(baseUrl,basequeryString,tdate):
     
@@ -119,12 +137,12 @@ def select_matching_calibration_from_gemini_archive(baseUrl,basequeryString,tdat
         if Nfiles == 0:
             timeWindowSize += 1.*u.day  
             t1,t2 = get_time_window(tdate,timeWindowSize)
-            
-            #       if no files are found, increase time window around obs date
+            # if no files are found, increase time window around obs date
             print('No files found in time window, repeat with larger one')
 
     Tg = gsum.return_full_info_as_table()
     return Tg
+
 
 def make_gemini_master_bias(Tg, dataDir, overwrite=0, verbose=0):
     masterbiasFitsFile = os.path.join(dataDir,"bias.fits")
@@ -143,6 +161,7 @@ def make_gemini_master_bias(Tg, dataDir, overwrite=0, verbose=0):
         
     return masterbiasFitsFile   
 
+
 def make_gemini_master_flat(Tg, dataDir, masterbiasFitsFile, overwrite=0, verbose=0):
     masterflatFitsFile = os.path.join(dataDir,"flat.fits")
     if ( (not os.path.isfile(masterflatFitsFile)) or (overwrite == 1) ):
@@ -160,7 +179,8 @@ def make_gemini_master_flat(Tg, dataDir, masterbiasFitsFile, overwrite=0, verbos
         
     return masterflatFitsFile
 
-def make_gemini_frame_mosaic_PDF(filename, overwrite=0,outputDir=None, deleteFits=True):
+
+def make_gemini_frame_mosaic_PDF(filename, overwrite=0, outputDir=None, deleteFits=True):
     dataDir, fname = os.path.split(filename)
     if outputDir is not None:
         dataDir = outputDir     
@@ -168,9 +188,10 @@ def make_gemini_frame_mosaic_PDF(filename, overwrite=0,outputDir=None, deleteFit
     saveFile = mosaicName.replace('.fits','.pdf');
     if ( (not os.path.isfile(saveFile)) or (overwrite == 1) ):          
         gmos.gmosaic(filename,outimages=mosaicName)
+
         fig = pl.figure(figsize=(7, 7),facecolor='w', edgecolor='k'); pl.clf();        
-        gc = aplpy.FITSFigure(mosaicName, figure=fig)#,convention='wells')#, dimensions=[1 ,0]);
-        gc.show_grayscale(invert = False)#, stretch='log', vmid=-1)#,vmid=-1)#, aspect = pixScaleAC_mas/pixScaleAL_mas, pmax =90 )
+        gc = aplpy.FITSFigure(mosaicName, figure=fig)
+        gc.show_grayscale(invert = False)
         if (('mbias.pdf' in saveFile) | ('mflat.pdf' in saveFile)):
             gc.hide_ytick_labels()
             gc.hide_xtick_labels()      
@@ -178,15 +199,16 @@ def make_gemini_frame_mosaic_PDF(filename, overwrite=0,outputDir=None, deleteFit
         if deleteFits:
             os.remove(mosaicName)
 
-def make_gemini_frame_mosaic(filename, overwrite=0, outputDir = None, deleteFits = False, makePDF = False, outputDirPDF = None):
+
+def make_gemini_frame_mosaic(filename, overwrite=False, outputDir = None, deleteFits = False,
+                             makePDF = False, outputDirPDF = None):
     dataDir, fname = os.path.split(filename)
     if outputDir is not None:
         dataDir = outputDir     
     mosaicName = os.path.join(dataDir,'m'+fname)    
     
-    if ( (not os.path.isfile(mosaicName)) or (overwrite == 1) ):
+    if ( (not os.path.isfile(mosaicName)) or (overwrite) ):
         gmos.gmosaic(filename, outimages=mosaicName)
-
         # 2017-12-12 do not interpolate when creating the mosoaic
         # see http://www.gemini.edu/sciops/data/IRAFdoc/gmosinfo.html
         # gmos.gmosaic(filename, outimages=mosaicName, geointer="nearest")
@@ -199,8 +221,8 @@ def make_gemini_frame_mosaic(filename, overwrite=0, outputDir = None, deleteFits
             saveFile = mosaicName.replace('.fits','.pdf');
         if ( (not os.path.isfile(saveFile)) or (overwrite == 1) ):          
             fig = pl.figure(figsize=(7, 7),facecolor='w', edgecolor='k'); pl.clf();        
-            gc = aplpy.FITSFigure(mosaicName, figure=fig)#,convention='wells')#, dimensions=[1 ,0]);
-            gc.show_grayscale(invert = False)#, stretch='log', vmid=-1)#,vmid=-1)#, aspect = pixScaleAC_mas/pixScaleAL_mas, pmax =90 )
+            gc = aplpy.FITSFigure(mosaicName, figure=fig)
+            gc.show_grayscale(invert = False)
             if (('mbias.pdf' in saveFile) | ('mflat.pdf' in saveFile)):
                 gc.hide_ytick_labels()
                 gc.hide_xtick_labels()      
