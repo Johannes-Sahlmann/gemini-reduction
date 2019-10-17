@@ -1,15 +1,24 @@
-[![Build Status](https://travis-ci.org/Johannes-Sahlmann/pystrometry.svg?branch=master)](https://travis-ci.org/Johannes-Sahlmann/pystrometry)
-[![Documentation Status](https://readthedocs.org/projects/pystrometry/badge/?version=latest)](https://pystrometry.readthedocs.io/en/latest/?badge=latest)
-[![PyPI version](https://badge.fury.io/py/pystrometry.svg)](https://badge.fury.io/py/pystrometry)
-[![PyPI - License](https://img.shields.io/pypi/l/Django.svg)](https://github.com/Johannes-Sahlmann/pystrometry/blob/master/LICENSE.md)
+# gemini_reduction  -  Support for reducing Gemini-N and Gemini-S GMOS imaging data
 
-# pystrometry  -  Support for high-precision astrometry timeseries analysis
 
+### Environment creation and dependency installation:
+    conda create -n geminiconda python=2.7 iraf-all pyraf-all stsci gemini
+    conda install -y -c astropy     aplpy
 
 ### Example usage
+This script implements:
+- download data from Gemini archive given an object name
+- associate and download corresponding calibrations (bias, flat)
+- generate the master calibration files
+- reduce the imaging data using the master calibrations
+- generate pdf images
+
+
+    python gmos_reduce_image_example.py 
 
 ### Documentation
 
+    That's it, sorry.
 
 ### Contributing
 Please open a new issue or new pull request for bugs, feedback, or new features you would like to see. If there is an issue you would like to work on, please leave a comment and we will be happy to assist. New contributions and contributors are very welcome!   
@@ -17,5 +26,11 @@ Please open a new issue or new pull request for bugs, feedback, or new features 
 
 ### References
 
+Programmatic interface to Gemini archive implemented with the help of
+https://archive.gemini.edu/help/api.html
 
+
+### Author
+
+Johannes Sahlmann, 2016 --
 
