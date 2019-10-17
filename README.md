@@ -12,13 +12,14 @@ This script implements:
 - generate the master calibration files
 - reduce the imaging data using the master calibrations
 - generate pdf images
-
-
+    
+    
     python gmos_reduce_image_example.py 
+
 
 ### Documentation
 
-    That's it, sorry.
+That's it, sorry.
 
 ### Contributing
 Please open a new issue or new pull request for bugs, feedback, or new features you would like to see. If there is an issue you would like to work on, please leave a comment and we will be happy to assist. New contributions and contributors are very welcome!   
