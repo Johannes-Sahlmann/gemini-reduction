@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/215828311.svg)](https://zenodo.org/badge/latestdoi/215828311)
+
 # gemini_reduction  -  Support for reducing Gemini-N and Gemini-S GMOS imaging data
 
 
